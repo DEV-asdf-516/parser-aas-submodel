@@ -7,7 +7,7 @@
 
 <br>
 
-### 요구사항
+## 요구사항
 
 - 서브모델에 대해 해당 필드 값만 추출
 
@@ -19,8 +19,8 @@
 - value
 ```
 
-- 어떤 항목에 하위 항목이 존재하는 경우, 하위 항목 목록을 표기
-- 항목에 대한 계층 단계를 표기
+- 어떤 항목에 하위 항목이 존재하는 경우, refrence 필드에 하위 항목 표기
+- 항목에 대한 계층 단계를 depth 필드에 표기
 
 <br>
 
@@ -49,12 +49,11 @@
 - [x] API Key 암/복호화 적용
 - [x] tkinter로 GUI 환경 구현
 - [x] Queue를 활용한 비동기 로그 처리
+- [x] 표에 계층구조 적용
 
 ---
 
-<br>
-
-#### 📸 SCREEN SHOT
+##### 📸 SCREEN SHOT
 
 ##### 복수 파일 선택
 
@@ -71,3 +70,7 @@
 ##### Submodel_Documentation.xlsx
 
 ![res4](https://github.com/user-attachments/assets/8e08e89c-1340-4532-9d49-894b81dbaeb7)
+
+##### [24/10/22] Submodel_Documentation.xlsx 👉 계층구조 적용
+
+![image](https://github.com/user-attachments/assets/fb0ce3a0-dc47-4872-9d1b-c0c58fbe3447)

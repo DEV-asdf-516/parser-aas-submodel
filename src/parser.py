@@ -9,13 +9,13 @@ class Parser:
             "idShort",
             "modelType",
             "value",
-            "language",
-            "text",
             "statements",
             "description",
         ]
         self.languages = ["kr", "KR", "en", "EN", "de", "fr", "jp"]
+        self.no_recursive_columns = ["language", "text"]
         self.json = json
+        self.name = None
 
     """
     - _create_smc_list
@@ -136,14 +136,11 @@ class Parser:
     ========================================================================= [AFTER > LIST] =========================================================================
     [
       ['idShort', 'ProductCarbonFootprint'],
-      ['description', 'en'],
-      ['description', 'Balance of greenhouse gas emissions along the entire life cycle of a product in a defined application and in relation to a defined unit of use'],
+      ['description', '[en] Balance of greenhouse gas emissions along the entire life cycle of a product in a defined application and in relation to a defined unit of use'],
       ['semanticId', 'https://admin-shell.io/idta/CarbonFootprint/ProductCarbonFootprint/0/9'],
       ['', 'idShort', 'PCFCalculationMethod'],
-      ['', 'description', 'en'],
-      ['', 'description', 'Standard, method for determining the greenhouse gas emissions of a product'],
-      ['', 'description', 'de'],
-      ['', 'description', 'Norm, Standard, Verfahren zur Ermittlung der Treibhausgas-Emissionen eines Produkts'],
+      ['', 'description', '[en] Standard, method for determining the greenhouse gas emissions of a product'], 
+      ['', 'description', '[de] Norm, Standard, Verfahren zur Ermittlung der Treibhausgas-Emissionen eines Produkts']
       ['', 'semanticId', '0173-1#02-ABG854#001'],
       ['', 'value', ''],
       ['', 'modelType', 'Property'],
@@ -168,12 +165,7 @@ class Parser:
                                 item, parent_depth + 1, flattened
                             )  # 리스트 항목에 대해 재귀 호출
                     else:
-                        if key in ["language", "text"]:
-                            key = "description"
-                            indent.pop()
-                            flattened.append(indent + [key, value])
-                        else:
-                            flattened.append(indent + [key, value])  # 현재 키와 값 추가
+                        flattened.append(indent + [key, value])  # 현재 키와 값 추가
 
                 if (
                     key == "semanticId" and isinstance(value, dict) and "keys" in value
@@ -181,6 +173,20 @@ class Parser:
                     indent = [""] * parent_depth
                     for key_entry in value.get("keys"):
                         flattened.append(indent + [key, key_entry.get("value")])
+                if (
+                    key in ["description", "value"]
+                    and isinstance(value, list)
+                    and value
+                ):
+                    indent = [""] * parent_depth
+                    for v in value:
+                        if key == "description" or (
+                            key == "value"  # multiLanguageProperty value값 추출
+                            and any(k in v for k in self.no_recursive_columns)
+                        ):
+                            flattened.append(
+                                indent + [key, f'[{v.get("language")}] {v.get("text")}']
+                            )
 
         elif isinstance(element, list):
             for sub_element in element:
@@ -194,6 +200,7 @@ class Parser:
     """
 
     def create_indent_rows(self):
+        self.name = self.json["idShort"]
         elements = self.json["submodelElements"]
         return self._to_flattend(elements, 0, [])
 
@@ -202,18 +209,18 @@ class Parser:
     - summary: DataFrame을 딕셔너리 형태로 변경
     예)
     ========================================================================= [BEFORE > DataFrame] =========================================================================
-                   0                                                  1                                                  2     3
-    0        idShort                             ProductCarbonFootprint                                               None  None
-    1    description                                                 en                                               None  None
-    2    description  Balance of greenhouse gas emissions along the ...                                               None  None
-    3     semanticId  https://admin-shell.io/idta/CarbonFootprint/Pr...                                               None  None
-    4                                                           idShort                               PCFCalculationMethod  None
-    ..           ...                                                ...                                                ...   ...
-    208                                                     description  Time at which something should no longer be us...  None
-    209                                                      semanticId  https://admin-shell.io/idta/CarbonFootprint/Ex...  None
-    210                                                           value                                                     None
-    211                                                       modelType                                           Property  None
-    212    modelType                          SubmodelElementCollection                                               None  None
+                    0                                                  1                                                  2     3
+        0        idShort                             ProductCarbonFootprint                                               None  None
+        1    description  [en] Balance of greenhouse gas emissions along...                                               None  None
+        2     semanticId  https://admin-shell.io/idta/CarbonFootprint/Pr...                                               None  None
+        3                                                           idShort                               PCFCalculationMethod  None
+        4                                                       description  [en] Standard, method for determining the gree...  None
+        ..           ...                                                ...                                                ...   ...
+        171                                                     description  [en] Time at which something should no longer ...  None
+        172                                                      semanticId  https://admin-shell.io/idta/CarbonFootprint/Ex...  None
+        173                                                           value                                                     None
+        174                                                       modelType                                           Property  None
+        175    modelType                          SubmodelElementCollection                                               None  None
 
     ========================================================================= [AFTER > Dictionary] =========================================================================
     {
@@ -221,40 +228,31 @@ class Parser:
           {'idShort': 'ProductCarbonFootprint'},
           {'index': 0},
           {'indent': 0},
-          {'description': 'en'},
-          {'index': 1},
-          {'indent': 0},
-          {'description': 'Balance of greenhouse gas emissions along the entire life cycle of a product in a defined application and in relation to a defined unit of use'},
-          {'index': 2},
+          {'description': '[en] Balance of greenhouse gas emissions along the entire life cycle of a product in a defined application and in relation to a defined unit of use'}, 
+          {'index': 1}, 
           {'indent': 0},
           {'semanticId': 'https://admin-shell.io/idta/CarbonFootprint/ProductCarbonFootprint/0/9'},
-          {'index': 3},
+          {'index': 2},
           {'indent': 0},
           {'idShort': 'PCFCalculationMethod'},
-          {'index': 4},
+          {'index': 3},
           {'indent': 1},
-          {'description': 'en'},
-          {'index': 5},
-          {'indent': 1},
-          {'description': 'Standard, method for determining the greenhouse gas emissions of a product'},
-          {'index': 6},
-          {'indent': 1},
-          {'description': 'de'},
-          {'index': 7},
-          {'indent': 1},
-          {'description': 'Norm, Standard, Verfahren zur Ermittlung der Treibhausgas-Emissionen eines Produkts'},
-          {'index': 8},
+          {'description': '[en] Standard, method for determining the greenhouse gas emissions of a product'}, 
+          {'index': 4}, 
+          {'indent': 1}, 
+          {'description': '[de] Norm, Standard, Verfahren zur Ermittlung der Treibhausgas-Emissionen eines Produkts'}, 
+          {'index': 5}, 
           {'indent': 1},
           {'semanticId': '0173-1#02-ABG854#001'},
-          {'index': 9},
+          {'index': 6},
           {'indent': 1},
           {'value': ''},
-          {'index': 10},
+          {'index': 7},
           {'indent': 1},
           {'modelType': 'Property'},
           ...
           {'modelType': 'SubmodelElementCollection'},
-          {'index': 212},
+          {'index': 175},
           {'indent': 0}
       ],
       ...
@@ -316,40 +314,31 @@ class Parser:
           {'idShort': 'ProductCarbonFootprint'},
           {'index': 0},
           {'indent': 0},
-          {'description': 'en'},
-          {'index': 1},
-          {'indent': 0},
-          {'description': 'Balance of greenhouse gas emissions along the entire life cycle of a product in a defined application and in relation to a defined unit of use'},
-          {'index': 2},
+          {'description': '[en] Balance of greenhouse gas emissions along the entire life cycle of a product in a defined application and in relation to a defined unit of use'}, 
+          {'index': 1}, 
           {'indent': 0},
           {'semanticId': 'https://admin-shell.io/idta/CarbonFootprint/ProductCarbonFootprint/0/9'},
-          {'index': 3},
+          {'index': 2},
           {'indent': 0},
           {'idShort': 'PCFCalculationMethod'},
-          {'index': 4},
+          {'index': 3},
           {'indent': 1},
-          {'description': 'en'},
-          {'index': 5},
-          {'indent': 1},
-          {'description': 'Standard, method for determining the greenhouse gas emissions of a product'},
-          {'index': 6},
-          {'indent': 1},
-          {'description': 'de'},
-          {'index': 7},
-          {'indent': 1},
-          {'description': 'Norm, Standard, Verfahren zur Ermittlung der Treibhausgas-Emissionen eines Produkts'},
-          {'index': 8},
+          {'description': '[en] Standard, method for determining the greenhouse gas emissions of a product'}, 
+          {'index': 4}, 
+          {'indent': 1}, 
+          {'description': '[de] Norm, Standard, Verfahren zur Ermittlung der Treibhausgas-Emissionen eines Produkts'}, 
+          {'index': 5}, 
           {'indent': 1},
           {'semanticId': '0173-1#02-ABG854#001'},
-          {'index': 9},
+          {'index': 6},
           {'indent': 1},
           {'value': ''},
-          {'index': 10},
+          {'index': 7},
           {'indent': 1},
           {'modelType': 'Property'},
           ...
           {'modelType': 'SubmodelElementCollection'},
-          {'index': 212},
+          {'index': 175},
           {'indent': 0}
       ],
       ...
@@ -368,7 +357,7 @@ class Parser:
        'reference': 'PCFCalculationMethod, PCFCO2eq, PCFReferenceValueForCalculation, PCFQuantityOfMeasureForCalculation, PCFLifeCyclePhase, ExplanatoryStatement, PCFGoodsAddressHandover, PublicationDate, ExpirationDate'
       },
       {
-       'index': 4,
+       'index': 3,
        'depth': 2,
        'idShort': 'PCFCalculationMethod',
        'semanticId': '0173-1#02-ABG854#001',
@@ -405,17 +394,20 @@ class Parser:
                         if not prop.is_allocated(prop.model_type):
                             prop.model_type = item.get("modelType")
                     if "description" in item:
-                        desc = (
-                            f'[{item.get("description")}]'
-                            if item.get("description") in self.languages
-                            else item.get("description")
-                        )
                         if prop.is_allocated(prop.description):
-                            prop.description += " " + desc
+                            prop.description += " " + item.get("description")
                         else:
-                            prop.description = desc
+                            prop.description = item.get("description")
                     if "value" in item:
-                        prop.value = item.get("value")
+                        value = (
+                            f'[{item.get("value")}]'
+                            if item.get("value") in self.languages
+                            else item.get("value")
+                        )
+                        if prop.is_allocated(prop.value):
+                            prop.value += " " + value
+                        else:
+                            prop.value = value
 
                 if (
                     idx < len(items) - 1

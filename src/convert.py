@@ -5,7 +5,11 @@ import pandas as pd
 from pandas import DataFrame
 
 from model import Property
-from parser_enum import Parser_Error, Status
+from parser_enum import (
+    DescriptionType,
+    ParserError,
+    Status,
+)
 from parser import Parser
 from translator import GptService as GPT
 
@@ -28,7 +32,7 @@ class ExcelConverter:
         )
 
         if not file_paths:
-            return Parser_Error.NOT_EXIST_FILE
+            return ParserError.NOT_EXIST_FILE
 
         for file_path in file_paths:
             try:
@@ -36,7 +40,7 @@ class ExcelConverter:
                     data = json.load(file)
                     self.jsons.append((data, file_path))
             except Exception as e:
-                return Parser_Error.FAIL_LOAD_FILE
+                return ParserError.FAIL_LOAD_FILE
         return self.jsons
 
     """
@@ -62,7 +66,6 @@ class ExcelConverter:
                     extracted.append({idx: ""})
                 else:
                     extracted.append({idx: prop.description})
-
             to_translate = [
                 self.translator.kr_translator(content=next(iter(eng.values())))
                 for eng in extracted
@@ -73,12 +76,66 @@ class ExcelConverter:
                     properties[i].description += " [kr] " + res
 
     """
+    - add_constant_description
+    - summary: submodel의 idShort에 대한 설명이 고정적인 경우, 미리 등록해놓은 description으로 설정
+    """
+
+    def add_constant_description(self, properties: Property, parser: Parser):
+        descriptions = DescriptionType.find_by_name(parser.name)
+        if descriptions:
+            for prop in properties:
+                desc = next(
+                    (
+                        d
+                        for d in descriptions
+                        if d.name.lower() == prop.id_short.lower()
+                    ),
+                    next(
+                        (
+                            d
+                            for d in descriptions
+                            if d.name.lower() in prop.id_short.lower()
+                        ),
+                        None,
+                    ),
+                )
+                if desc is not None:
+                    if prop.description is None or (
+                        prop.description is not None and "[kr]" not in prop.description
+                    ):
+                        prop.description = desc.value[-1]
+
+    """
+    - apply_depth_hierarchy
+    - summary: depth를 기준으로 table을 트리구조로 변경
+    """
+
+    def apply_depth_hierarchy(self, df: DataFrame):
+        max_depth = df["depth"].max()
+
+        for i in range(1, max_depth + 1):
+            df[f"depth{i:02d}"] = None
+
+        for i, r in df.iterrows():
+            depth = r["depth"]
+            id_short = r["idShort"]
+            df.at[i, f"depth{depth:02d}"] = id_short
+
+        columns = [f"depth{i:02d}" for i in range(1, max_depth + 1)] + [
+            "modelType",
+            "semanticId",
+            "value",
+            "description",
+        ]
+        return df[columns]
+
+    """
     - convert_json_to_excel
     - summary: json 데이터를 엑셀파일로 변환하여 저장하고 성공한 목록을 반환
     """
 
     def convert_json_to_excel(self, queue_handler: QueueHandler):
-        if self.jsons in [error for error in Parser_Error]:
+        if self.jsons in [error for error in ParserError]:
             return
 
         for json, file_path in self.jsons:
@@ -87,9 +144,12 @@ class ExcelConverter:
             submodels = parser.create_indent_rows()
             df = pd.DataFrame(submodels)
             elements, hierarchy = parser.df_to_sequence_dict(df)
+
             properties = parser.sequence_dict_to_properties(elements, hierarchy)
-            # 한글 번역 추가
+
+            self.add_constant_description(properties, parser)
             self.add_translate_description(properties)
+
             table = [prop.to_json() for prop in properties]
 
             result_df = pd.DataFrame(table).sort_values(by="index")
@@ -109,7 +169,9 @@ class ExcelConverter:
 
             rm_index_df = result_df.drop(columns=["index"])
 
-            saved = self.save_to_xlsx(rm_index_df, file_path)
+            tree_df = self.apply_depth_hierarchy(rm_index_df)
+
+            saved = self.save_to_xlsx(tree_df, file_path)
 
             queue_handler.add(
                 {
