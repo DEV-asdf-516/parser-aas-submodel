@@ -53,7 +53,7 @@
 
 ---
 
-##### 📸 SCREEN SHOT
+#### 📸 SCREEN SHOT
 
 ##### 복수 파일 선택
 

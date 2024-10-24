@@ -11,6 +11,11 @@ class Status(Enum):
     END = "[END]"
 
 
+class Similarity(Enum):
+    EQUAL = auto()
+    SIMILARITY = auto()
+
+
 class IdentificationDescription(Enum):
     ManufacturerName = (
         auto(),
@@ -526,6 +531,10 @@ class DigitalNameplateDescription(Enum):
         "[en] maximum value of inductance that can be connected to the connection facilities of the apparatus without invalidating the type of protection",
     )
     MaxExternalInductanceRatio = (
+        auto(),
+        "[en] maximum value of ratio of inductance (Lo) to resistance (Ro) of any external circuit that can be connected to the connection facilities of the electrical apparatus without invalidating intrinsic safety",
+    )
+    MaxExternalInductanceResistanceRatio = (
         auto(),
         "[en] maximum value of ratio of inductance (Lo) to resistance (Ro) of any external circuit that can be connected to the connection facilities of the electrical apparatus without invalidating intrinsic safety",
     )

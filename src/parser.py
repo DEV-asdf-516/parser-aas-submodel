@@ -65,8 +65,8 @@ class Parser:
         return smcs
 
     """
-    _extract_smc_childeren
-    summary: SubmodelElementCollection의 자식목록 추출
+    - _extract_smc_childeren
+    - summary: SubmodelElementCollection의 자식목록 추출
     """
 
     def _extract_smc_childeren(self, parents: SubModelCollection, rows: Property):

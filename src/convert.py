@@ -8,10 +8,12 @@ from model import Property
 from parser_enum import (
     DescriptionType,
     ParserError,
+    Similarity,
     Status,
 )
 from parser import Parser
 from translator import GptService as GPT
+import re
 
 
 class ExcelConverter:
@@ -86,13 +88,13 @@ class ExcelConverter:
             for prop in properties:
                 desc = next(
                     (
-                        d
+                        (Similarity.EQUAL, d)
                         for d in descriptions
                         if d.name.lower() == prop.id_short.lower()
                     ),
                     next(
                         (
-                            d
+                            (Similarity.SIMILARITY, d)
                             for d in descriptions
                             if d.name.lower() in prop.id_short.lower()
                         ),
@@ -103,7 +105,27 @@ class ExcelConverter:
                     if prop.description is None or (
                         prop.description is not None and "[kr]" not in prop.description
                     ):
-                        prop.description = desc.value[-1]
+                        if desc[0] == Similarity.EQUAL or (
+                            desc[0] == Similarity.SIMILARITY
+                            and bool(re.search(r"[\d{]", prop.id_short))
+                        ):
+                            prop.description = desc[-1].value[-1]
+
+    """
+    - remove_unnecessary_description
+    - summary: MultiLanguageProperty 설명이 예시 그대로 들어간 경우 빈 문자열로 처리
+    """
+
+    def remove_unnecessary_description(self, properties: Property):
+        for prop in properties:
+            if prop.model_type not in ["MultiLanguageProperty"]:
+                continue
+            if (
+                prop.model_type == "MultiLanguageProperty"
+                and prop.description is not None
+                and prop.description.startswith("[en] Recommendation:")
+            ):
+                prop.description = ""
 
     """
     - apply_depth_hierarchy
@@ -148,6 +170,7 @@ class ExcelConverter:
             properties = parser.sequence_dict_to_properties(elements, hierarchy)
 
             self.add_constant_description(properties, parser)
+            self.remove_unnecessary_description(properties)
             self.add_translate_description(properties)
 
             table = [prop.to_json() for prop in properties]
