@@ -63,8 +63,6 @@ class LoadButton:
         thread = threading.Thread(target=self.run, args=(converter, queue_handler))
         thread.start()
 
-        converter.convert_json_to_excel(queue_handler)
-
     def run(self, converter: ExcelConverter, queue_handler: QueueHandler):
         converter.jsons = converter.load_json_file()
         converter.convert_json_to_excel(queue_handler)
