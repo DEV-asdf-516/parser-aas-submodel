@@ -135,20 +135,27 @@ class ExcelConverter:
     def apply_depth_hierarchy(self, df: DataFrame):
         max_depth = df["depth"].max()
 
-        for i in range(1, max_depth + 1):
-            df[f"depth{i:02d}"] = None
+        for i in range(1, max_depth):
+            df[f"SMC{i:02d}"] = None
 
         for i, r in df.iterrows():
             depth = r["depth"]
             id_short = r["idShort"]
-            df.at[i, f"depth{depth:02d}"] = id_short
+            if r["modelType"] in [
+                "SubmodelElementCollection",
+                "Entity",
+                "SubmodelElementList",
+            ]:
+                df.at[i, f"SMC{depth:02d}"] = id_short
 
-        columns = [f"depth{i:02d}" for i in range(1, max_depth + 1)] + [
+        columns = [f"SMC{i:02d}" for i in range(1, max_depth)] + [
             "modelType",
+            "idShort",
             "semanticId",
             "value",
             "description",
         ]
+
         return df[columns]
 
     """

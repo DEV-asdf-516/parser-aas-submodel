@@ -552,6 +552,124 @@ class DigitalNameplateDescription(Enum):
     )
 
 
+class NameplateDescription(Enum):
+    # https://industrialdigitaltwin.org/en/wp-content/uploads/sites/2/2023/08/IDTA-02007-1-0_Submodel_Software-Nameplate.pdf
+    URIOfTheProduct = (
+        auto(),
+        "[en] Unique global identification of the product using a universal resource identifier (URI)",
+    )
+    ManufacturerName = (
+        auto(),
+        "[en] Legally valid designation of the natural or judicial person which is directly responsible for the design, production, packaging and labeling of a product in respect to its being brought into circulation [kr] 제품 유통과 관련하여 제품의 디자인, 생산, 포장 및 라벨링에 직접적으로 책임이 있는 자연인 또는 사법인의 법적으로 유효한 지정입니다.",
+    )
+    ManufacturerProductDesignation = (
+        auto(),
+        "[en] The name of the product, provided by the manufacturer",
+    )
+    ManufacturerProductDescription = (
+        auto(),
+        "[en] Description of the product, it's technical features and implementation if needed (long text)",
+    )
+    ManufacturerProductFamily = (
+        auto(),
+        "[en] 2nd level of a 3 level manufacturer specific product hierarchy",
+    )
+    ManufacturerProductType = (
+        auto(),
+        "[en] Characteristic to differentiate between different products of a product family or special variants",
+    )
+    SoftwareType = (
+        auto(),
+        "[en] The type of the software (category, e.g. Runtime, Application, Firmware, Driver, etc.)",
+    )
+    Version = (
+        auto(),
+        "[en] The complete version information consisting of Major Version, Minor Version, Revision and Build Number",
+    )
+    VersionName = (auto(), "[en] The name this particular version is given")
+    VersionInfo = (
+        auto(),
+        "[en] Provides a textual description of most relevant characteristics of the version of the software",
+    )
+    ReleaseDate = (
+        auto(),
+        "[en] The moment in time, when this version of the software was made publicly available",
+    )
+    ReleaseNotes = (auto(), "[en] Contains information about this release")
+    BuildDate = (
+        auto(),
+        "[en] The moment in time, when this particular build of software was created",
+    )
+    InstallationURI = (
+        auto(),
+        "[en] Indicates the resource, where the software is being provided by the manufacturer",
+    )
+    InstallationFile = (auto(), "[en] Contains the installation code as BLOB.")
+    InstallerType = (auto(), "[en] Indicates the type of installation package")
+    InstallationChecksum = (
+        auto(),
+        "[en] Provides the checksum for the software available at InstallationURI",
+    )
+    SerialNumber = (
+        auto(),
+        "[en] Unique combination of numbers and letters used to identify the software instance",
+    )
+    InstanceName = (auto(), "[en] The name of the software instance")
+    InstalledVersion = (
+        auto(),
+        "[en] The version information of the installed instance, consisting of Major Version, Minor Version, Revision and Build Number indicates the actual version of the instance",
+    )
+    InstallationDate = (auto(), "[en] Date of Installation")
+    InstallationPath = (
+        auto(),
+        "[en] Indicates the path to the installed instance of the software",
+    )
+    InstallationSource = (
+        auto(),
+        "[en] Indicates the path to the installation files used in this instance of the software",
+    )
+    InstalledOnArchitecture = (
+        auto(),
+        "[en] Indicates the processor architecture this instance is installed on",
+    )
+    InstalledOnOS = (
+        auto(),
+        "[en] Indicates the operating system this instance is installed on",
+    )
+    InstalledOnHost = (
+        auto(),
+        "[en] Indicates the host system in case of a virtual environment",
+    )
+    InstalledModules = (auto(), "[en] Collection of installed modules")
+    ConfigurationPaths = (
+        auto(),
+        "[en] Indicates the path to the configuration information",
+    )
+    SLAInformation = (auto(), "[en] Indicates the actual service level agreements")
+    Contact = (auto(), "[en] Collection for general contact data")
+    InventoryTag = (
+        auto(),
+        "[en] Specifies an information used for inventory of the software",
+    )
+    InstalledModule = (auto(), "[en] The name of a particular module installed")
+    ConfigurationPath = (auto(), "[en] Contains a single configuration entry")
+    ConfigurationURI = (auto(), "[en] Indicates the path to the configuration")
+    ConfigurationType = (
+        auto(),
+        "[en] Indicates the type of configuration (e.g. general configuration, user configuration)",
+    )
+    Marking = (
+        auto(),
+        "[en] contains information about the marking labelled on the device",
+    )
+    MarkingName = (auto(), "[en] common name of the marking")
+    Markings = (auto(), "[en] Collection of product markings")
+    AssetSpecificProperties = (
+        auto(),
+        "[en] Group of properties that are listed on the asset's nameplate and are grouped based on guidelines",
+    )
+
+
 class HierarchicalStructuresDescription(Enum):
     # https://industrialdigitaltwin.org/en/wp-content/uploads/sites/2/2024/06/IDTA-02011-1-1_Submodel_HierarchicalStructuresEnablingBoM.pdf
     EntryNode = (
@@ -675,6 +793,7 @@ class DescriptionType(Enum):
     DigitalNameplate = [desc for desc in DigitalNameplateDescription]
     HierarchicalStructures = [desc for desc in HierarchicalStructuresDescription]
     CarbonFootprint = [desc for desc in CarbonFootprintDescription]
+    Nameplate = [desc for desc in NameplateDescription]
 
     @classmethod
     def find_by_name(cls, name):
