@@ -159,7 +159,7 @@ class DocumentationDescription(Enum):
     # https://industrialdigitaltwin.org/en/wp-content/uploads/sites/2/2023/03/IDTA-02004-1-2_Submodel_Handover-Documentation.pdf
     DocumentId = (
         auto(),
-        "[en] Set of document identifiers for the Document. One ID in this collection should be used as a preferred ID (see isPrimary below).",
+        "[en] Set of document identifiers for the Document. One ID in this collection should be used as a preferred ID (see isPrimary below). [kr] Document에 대한 문서 식별자 세트. 이 컬렉션의 한 ID는 기본 ID로 사용해야 함(아래 isPrimary 참조).",
     )
     DocumentClassification = (
         auto(),
