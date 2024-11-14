@@ -141,12 +141,7 @@ class ExcelConverter:
         for i, r in df.iterrows():
             depth = r["depth"]
             id_short = r["idShort"]
-            if r["modelType"] in [
-                "SubmodelElementCollection",
-                "Entity",
-                "SubmodelElementList",
-            ]:
-                df.at[i, f"SMC{depth:02d}"] = id_short
+            df.at[i, f"SMC{depth:02d}"] = id_short
 
         columns = [f"SMC{i:02d}" for i in range(1, max_depth)] + [
             "modelType",
