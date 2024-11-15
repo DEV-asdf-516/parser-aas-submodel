@@ -18,6 +18,8 @@ class Gui:
         self.main.columnconfigure(0, weight=1)
         self.main.rowconfigure(0, weight=1)
 
+        self.main.resizable(False, False)
+
         self.log_queue = queue.Queue()
         self.queue_handler = QueueHandler(self.log_queue)
 

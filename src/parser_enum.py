@@ -9,6 +9,7 @@ class ParserError(Enum):
 class Status(Enum):
     START = "===============================================================================\n[START]"
     END = "[END]"
+    ERROR = "[FAIL]"
 
 
 class Similarity(Enum):

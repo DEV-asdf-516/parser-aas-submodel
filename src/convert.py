@@ -161,45 +161,51 @@ class ExcelConverter:
     def convert_json_to_excel(self, queue_handler: QueueHandler):
         if self.jsons in [error for error in ParserError]:
             return
+        try:
+            for json, file_path in self.jsons:
+                queue_handler.add({f"start converting {file_path}.": Status.START})
+                parser = Parser(json)
+                submodels = parser.create_indent_rows()
+                df = pd.DataFrame(submodels)
+                elements, hierarchy = parser.df_to_sequence_dict(df)
 
-        for json, file_path in self.jsons:
-            queue_handler.add({f"start converting {file_path}.": Status.START})
-            parser = Parser(json)
-            submodels = parser.create_indent_rows()
-            df = pd.DataFrame(submodels)
-            elements, hierarchy = parser.df_to_sequence_dict(df)
+                properties = parser.sequence_dict_to_properties(elements, hierarchy)
 
-            properties = parser.sequence_dict_to_properties(elements, hierarchy)
+                self.add_constant_description(properties, parser)
+                self.remove_unnecessary_description(properties)
+                self.add_translate_description(properties)
 
-            self.add_constant_description(properties, parser)
-            self.remove_unnecessary_description(properties)
-            self.add_translate_description(properties)
+                table = [prop.to_json() for prop in properties]
 
-            table = [prop.to_json() for prop in properties]
+                result_df = pd.DataFrame(table).sort_values(by="index")
 
-            result_df = pd.DataFrame(table).sort_values(by="index")
+                required_columns = [
+                    "index",
+                    "depth",
+                    "modelType",
+                    "idShort",
+                    "reference",
+                    "semanticId",
+                    "value",
+                    "description",
+                ]
 
-            required_columns = [
-                "index",
-                "depth",
-                "modelType",
-                "idShort",
-                "reference",
-                "semanticId",
-                "value",
-                "description",
-            ]
+                result_df = result_df.reindex(columns=required_columns, fill_value="")
 
-            result_df = result_df.reindex(columns=required_columns, fill_value="")
+                rm_index_df = result_df.drop(columns=["index"])
 
-            rm_index_df = result_df.drop(columns=["index"])
+                tree_df = self.apply_depth_hierarchy(rm_index_df)
 
-            tree_df = self.apply_depth_hierarchy(rm_index_df)
+                saved = self.save_to_xlsx(tree_df, file_path)
 
-            saved = self.save_to_xlsx(tree_df, file_path)
-
+                queue_handler.add(
+                    {
+                        f"{file_path.replace('.json', '.xlsx')} was successfully converted.": saved
+                    }
+                )
+        except:
             queue_handler.add(
                 {
-                    f"{file_path.replace('.json', '.xlsx')} was successfully converted.": saved
+                    f"An error occurred while converting the file at {file_path}.": Status.ERROR
                 }
             )

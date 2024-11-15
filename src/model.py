@@ -100,7 +100,7 @@ class Property:
 
 
 class SubModelCollection:
-    def __init__(self, id_short=None, model_type=None, children=None):
+    def __init__(self, id_short=None, model_type=None, children=[]):
         self._id_short = id_short
         self._model_type = model_type
         self._children = children
