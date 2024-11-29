@@ -7,10 +7,47 @@
 
 ## ❌ 24.11.15 EXE 직접 배포 중단
 
-프로젝트 경로에서 다음 명령어 수행
+### CASE 1. 번역 기능 미사용
+
+- `gui.py`의 GptService 주석처리
+
+```
+    def on_convert(self, queue_handler):
+        # gpt = GptService()
+        converter = ExcelConverter() # 변경
+```
+
+<br>
+
+- 프로젝트 경로에서 다음 명령어 수행
 
 ```
 pyinstaller --onefile --noconsole ./src/main.py
+```
+
+### CASE 2. 번역 기능 사용
+
+1. OpenAi api key 발급 (필수)
+2. .env 파일 작성
+
+```
+API_KEY = your api key
+```
+
+3. Encryption 적용 후, 실행
+
+```
+private_key = CipherKey()
+enc = Encrypt(private_key)
+enc.encryption()
+```
+
+<br>
+
+- 프로젝트 경로에서 다음 명령어 수행
+
+```
+pyinstaller --onefile --noconsole --add-data=.env;. --add-data=.pem;. ./src/main.py
 ```
 
 <br>
