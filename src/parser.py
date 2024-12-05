@@ -74,11 +74,16 @@ class Parser:
             ref = [prop for prop in rows if prop.id_short == smc.id_short]
             sub_hierachies = [key for key in parents if key.id_short == smc.id_short]
             for i, r in enumerate(ref):
-                if not r.is_allocated(r.reference):
-                    r.reference = ", ".join(sub_hierachies[i].children)
-                    r.model_type = sub_hierachies[i].model_type
-                else:
-                    break
+                try:
+                    if not r.is_allocated(r.reference):
+                        r.reference = ", ".join(sub_hierachies[i].children)
+                        r.model_type = sub_hierachies[i].model_type
+                    else:
+                        break
+                except IndexError as e:
+                    # [fix] 24/12/05 - 자식목록 없는 경우 예외처리
+                    r.refrence = ""
+                    r.model_type = sub_hierachies[0].model_type
 
     """
     - _to_flattend

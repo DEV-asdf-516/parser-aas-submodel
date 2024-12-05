@@ -203,7 +203,8 @@ class ExcelConverter:
                         f"{file_path.replace('.json', '.xlsx')} was successfully converted.": saved
                     }
                 )
-        except:
+        except RuntimeError as e:
+            print(e)
             queue_handler.add(
                 {
                     f"An error occurred while converting the file at {file_path}.": Status.ERROR
