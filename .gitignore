@@ -1,0 +1,6 @@
+**/*.pem
+**/*.env
+/dist
+/build
+/venv
+/__pycache__
