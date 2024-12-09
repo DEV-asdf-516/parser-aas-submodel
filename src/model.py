@@ -9,6 +9,7 @@ class Property:
         description=None,
         value=None,
         reference=None,
+        parent=None,
     ):
         self._index = index
         self._depth = depth
@@ -18,6 +19,7 @@ class Property:
         self._description = description
         self._value = value
         self._reference = reference
+        self._parent = parent
 
     @property
     def index(self):
@@ -83,6 +85,14 @@ class Property:
     def reference(self, reference):
         self._reference = reference
 
+    @property
+    def parent(self):
+        return self._parent
+
+    @parent.setter
+    def parent(self, parent):
+        self._parent = parent
+
     def is_allocated(self, input_value):
         return any([input_value]) if input_value is not None else False
 
@@ -96,6 +106,7 @@ class Property:
             "description": self._description,
             "value": self._value,
             "reference": self._reference,
+            "parent": self._parent,
         }
 
 

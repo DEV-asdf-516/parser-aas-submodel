@@ -86,6 +86,22 @@ class Parser:
                     r.model_type = sub_hierachies[0].model_type
 
     """
+    - _allocated_parent
+    - summary: Property에 부모가 존재하는 경우 부모 설정
+    """
+
+    def _allocated_parent(self, parents: SubModelCollection, rows: Property):
+        # 상위 SMC 추가
+        for r in rows:
+            parent = [
+                p.id_short
+                for p in parents
+                if r.id_short in (p.children if p.children else [])
+            ]
+            if parent:
+                r.parent = parent[0]
+
+    """
     - _to_flattend
     - summary: 깊이가 존재하는 json 형태를 list 형태로 평탄화 작업 수행
                각 depth는 공백으로 구분됨
@@ -424,5 +440,6 @@ class Parser:
                         prop = Property()
 
         self._extract_smc_childeren(parents, rows)
+        self._allocated_parent(parents, rows)
 
         return rows

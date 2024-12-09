@@ -140,8 +140,18 @@ class ExcelConverter:
 
         for i, r in df.iterrows():
             depth = r["depth"]
+
             id_short = r["idShort"]
-            df.at[i, f"SMC{depth:02d}"] = id_short
+
+            if r["modelType"] in [
+                "SubmodelElementCollection",
+                "Entity",
+                "SubmodelElementList",
+            ]:
+                df.at[i, f"SMC{depth:02d}"] = id_short
+            else:
+                if r["parent"] is not None:
+                    df.at[i, f"SMC{depth-1:02}"] = r["parent"]
 
         columns = [f"SMC{i:02d}" for i in range(1, max_depth)] + [
             "modelType",
@@ -176,7 +186,6 @@ class ExcelConverter:
                 self.add_translate_description(properties)
 
                 table = [prop.to_json() for prop in properties]
-
                 result_df = pd.DataFrame(table).sort_values(by="index")
 
                 required_columns = [
@@ -188,6 +197,7 @@ class ExcelConverter:
                     "semanticId",
                     "value",
                     "description",
+                    "parent",
                 ]
 
                 result_df = result_df.reindex(columns=required_columns, fill_value="")
@@ -203,7 +213,7 @@ class ExcelConverter:
                         f"{file_path.replace('.json', '.xlsx')} was successfully converted.": saved
                     }
                 )
-        except RuntimeError as e:
+        except Exception as e:
             print(e)
             queue_handler.add(
                 {
