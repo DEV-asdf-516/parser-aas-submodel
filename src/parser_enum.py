@@ -68,7 +68,7 @@ class IdentificationDescription(Enum):
     )
     TypClass = (
         auto(),
-        "[en] 2nd level of a 3rd level manufacturer specific product hierarchy. [kr] 3단계 제조업체별 제품 계층 구조 중 2단계.",
+        "[en] Class of type or category . [kr] 유형이나 카테고리의 분류.",
     )
     ClassificationSystem = (
         auto(),
