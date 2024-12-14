@@ -116,7 +116,7 @@ class IdentificationDescription(Enum):
     )
     QrCode = (
         auto(),
-        "[en] a type of two-dimensional matrix barcode. [kr] 2차원 매트릭스 바코드의 일종.",
+        "[en] a two-dimensional barcode that stores information, easily scannable by smartphones and other devices. [kr] 정보를 저장하여 스마트폰 등으로 쉽게 스캔할 수 있는 2차원 바코드.",
     )
     Name = (
         auto(),
