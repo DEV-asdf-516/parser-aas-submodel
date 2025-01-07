@@ -92,14 +92,21 @@ class Parser:
 
     def _allocated_parent(self, parents: SubModelCollection, rows: Property):
         # 상위 SMC 추가
+        allocated_count = {p.id_short: 0 for p in parents}
         for r in rows:
             parent = [
-                p.id_short
+                (p.id_short, len(p.children or []))
                 for p in parents
-                if r.id_short in (p.children if p.children else [])
+                if r.id_short in (p.children or [])
             ]
-            if parent:
-                r.parent = parent[0]
+            if not parent:
+                continue
+            else:  # 25/01/06 - [fix] 부모 설정 알고리즘 개선
+                for p, max_children in parent:
+                    if allocated_count[p] < max_children:
+                        r.parent = p
+                        allocated_count[p] += 1
+                        break
 
     """
     - _to_flattend

@@ -790,6 +790,7 @@ class CarbonFootprintDescription(Enum):
 class DescriptionType(Enum):
     Identification = [desc for desc in IdentificationDescription]
     Documentation = [desc for desc in DocumentationDescription]
+    HandOverDocumentation = [desc for desc in DocumentationDescription]
     TechnicalData = [desc for desc in TechnicalDataDescription]
     DigitalNameplate = [desc for desc in DigitalNameplateDescription]
     HierarchicalStructures = [desc for desc in HierarchicalStructuresDescription]
