@@ -20,6 +20,11 @@ class ExcelConverter:
     def __init__(self, translator=None):
         self.jsons = []
         self.translator = translator
+        self.smc_group = [
+            "SubmodelElementCollection",
+            "Entity",
+            "SubmodelElementList",
+        ]
 
     """
     - load_json_file
@@ -134,7 +139,6 @@ class ExcelConverter:
 
     def apply_depth_hierarchy(self, df: DataFrame):
         max_depth = df["depth"].max()
-
         for i in range(1, max_depth):
             df[f"SMC{i:02d}"] = None
 
@@ -143,14 +147,17 @@ class ExcelConverter:
 
             id_short = r["idShort"]
 
-            if r["modelType"] in [
-                "SubmodelElementCollection",
-                "Entity",
-                "SubmodelElementList",
-            ]:
+            if r["modelType"] in self.smc_group:
                 df.at[i, f"SMC{depth:02d}"] = id_short
             else:
-                if r["parent"] is not None:
+                if r["parent"] is not None and (
+                    (
+                        i > 0
+                        and df.iloc[i - 1]["depth"] != r["depth"]
+                        and df.iloc[i - 1]["modelType"] not in self.smc_group
+                    )
+                    or i == 0
+                ):
                     df.at[i, f"SMC{depth-1:02}"] = r["parent"]
 
         columns = [f"SMC{i:02d}" for i in range(1, max_depth)] + [
