@@ -92,13 +92,20 @@ class Parser:
 
     def _allocated_parent(self, parents: SubModelCollection, rows: Property):
         # 상위 SMC 추가
+        indexing_rows = sorted(
+            rows, key=lambda r: r.index
+        )  # 25/01/13 - [fix] rows 인덱스 순서 보장
         allocated_count = {p.id_short: 0 for p in parents}
-        for r in rows:
+        for r in indexing_rows:
             parent = [
-                (p.id_short, len(p.children or []))
+                (
+                    p.id_short,
+                    len(p.children or []),
+                )
                 for p in parents
                 if r.id_short in (p.children or [])
             ]
+
             if not parent:
                 continue
             else:  # 25/01/06 - [fix] 부모 설정 알고리즘 개선

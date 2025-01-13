@@ -47,7 +47,7 @@ enc.encryption()
 - 프로젝트 경로에서 다음 명령어 수행
 
 ```
-pyinstaller -F --noconsole --add-data ".env:." --add-data ".pem:." ./main.py
+pyinstaller --onefile --noconsole --add-data ".env:." --add-data ".pem:." ./src/main.py
 ```
 
 <br>
