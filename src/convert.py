@@ -150,6 +150,8 @@ class ExcelConverter:
             if r["modelType"] in self.smc_group:
                 df.at[i, f"SMC{depth:02d}"] = id_short
             else:
+                if r["parent"] is None and depth < 2:
+                    df.at[i, f"SMC{depth:02}"] = "-"
                 if r["parent"] is not None and (
                     (
                         i > 0
