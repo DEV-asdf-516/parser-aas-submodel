@@ -44,7 +44,7 @@ class TestAasEngine:
                 with open(file_path, self._open_type(extension)) as file:
                     self.detect(extension, test_file=file, path=file_path)
             except Exception as e:
-                print(e)
+                queue_handler.add({e: Status.ERROR})
         return self.files
 
     """

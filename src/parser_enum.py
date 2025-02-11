@@ -12,9 +12,9 @@ class Level(Enum):
         if self.value == 0:
             return "black"
         if self.value == 1:
-            return "#FF8C00"
+            return "brown"
         if self.value == 2 or self.value == 3:
-            return "#B22222"
+            return "red"
         return "blue"
 
 
