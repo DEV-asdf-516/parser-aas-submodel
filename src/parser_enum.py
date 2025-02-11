@@ -1,7 +1,34 @@
 from enum import Enum, auto
 
 
-class ParserError(Enum):
+class Level(Enum):
+    INFO = 0
+    WARNING = 1
+    ERROR = 2
+    CRITICAL = 3
+    TRACE = 4
+
+    def color(self) -> str:
+        if self.value == 0:
+            return "black"
+        if self.value == 1:
+            return "#FF8C00"
+        if self.value == 2 or self.value == 3:
+            return "#B22222"
+        return "blue"
+
+
+class TestFormat(Enum):
+    JSON = ".json"
+    XML = ".xml"
+    AASX = ".aasx"
+
+    @classmethod
+    def find_by_name(cls, name):
+        return next((f.value for f in cls if f.name.lower() == name.lower()), [])
+
+
+class Error(Enum):
     NOT_EXIST_FILE = auto()
     FAIL_LOAD_FILE = auto()
 
@@ -116,7 +143,7 @@ class IdentificationDescription(Enum):
     )
     QrCode = (
         auto(),
-        "[en] a two-dimensional barcode that stores information, easily scannable by smartphones and other devices. [kr] 정보를 저장하여 스마트폰 등으로 쉽게 스캔할 수 있는 2차원 바코드.",
+        "[en] a type of two-dimensional matrix barcode. [kr] 2차원 매트릭스 바코드의 일종.",
     )
     Name = (
         auto(),
@@ -326,7 +353,7 @@ class TechnicalDataDescription(Enum):
 
 
 class DigitalNameplateDescription(Enum):
-    # https://industrialdigitaltwin.org/en/wp-content/uploads/sites/2/2022/10/IDTA-02006-2-0_Submodel_Digital-Nameplate.pdf
+    # https://industrialdigitaltwin.org/en/wp-content/uploads/sites/2/2024/11/IDTA-02006-3-0_Submodel_Digital-Nameplate.pdf
     URIOFTheProduct = (
         auto(),
         "[en] unique global identification of the product using an universal resource identifier (URI)",
@@ -554,7 +581,7 @@ class DigitalNameplateDescription(Enum):
 
 
 class NameplateDescription(Enum):
-    # https://industrialdigitaltwin.org/en/wp-content/uploads/sites/2/2023/08/IDTA-02007-1-0_Submodel_Software-Nameplate.pdf
+    # https://industrialdigitaltwin.org/en/wp-content/uploads/sites/2/2024/11/IDTA-02006-3-0_Submodel_Digital-Nameplate.pdf
     URIOfTheProduct = (
         auto(),
         "[en] Unique global identification of the product using a universal resource identifier (URI)",
@@ -567,21 +594,57 @@ class NameplateDescription(Enum):
         auto(),
         "[en] The name of the product, provided by the manufacturer",
     )
+    AddressInformation = (
+        auto(),
+        '[en] Note: this set of information is defined by SMT drop-in "Address Information"',
+    )
     ManufacturerProductDescription = (
         auto(),
         "[en] Description of the product, it's technical features and implementation if needed (long text)",
     )
+    ManufacturerProductRoot = (
+        auto(),
+        "[en] top level of a 3 level manufacturer specific product hierarchy",
+    )
     ManufacturerProductFamily = (
         auto(),
-        "[en] 2nd level of a 3 level manufacturer specific product hierarchy",
+        "[en] second level of a 3 level manufacturer specific product hierarchy",
     )
     ManufacturerProductType = (
         auto(),
         "[en] Characteristic to differentiate between different products of a product family or special variants",
     )
+    OrderCodeOfManufacturer = (
+        auto(),
+        "[en] unique combination of numbers and letters issued by the manufacturer that is used to identify the device for ordering",
+    )
+    ProductArticleNumberOfManufacturer = (
+        auto(),
+        "[en] unique product identifier of the manufacturer",
+    )
+    SerialNumber = (
+        auto(),
+        "[en] unique combination of numbers and letters used to identify the device once it has been manufactured",
+    )
+    YearOfConstruction = (
+        auto(),
+        "[en] year in which the manufacturing process is completed",
+    )
+    DateOfManufacture = (auto(), "[en] date when an item was manufactured")
+    HardwareVersion = (auto(), "[en] version of the hardware supplied with the device")
+    FirmwareVersion = (auto(), "[en] version of the firmware supplied with the device")
     SoftwareType = (
         auto(),
         "[en] The type of the software (category, e.g. Runtime, Application, Firmware, Driver, etc.)",
+    )
+    SoftwareVersion = (auto(), "[en] version of the software used by the device")
+    CountryOfOrigin = (
+        auto(),
+        "[en] country where the product was manufactured Note: Country codes defined accord. to DIN EN ISO 3166-1 alpha-2 codes",
+    )
+    UniqueFacilityIdentifier = (
+        auto(),
+        "[en] unique string of characters for the identification of locations or buildings involved in a product's value chain or used by actors involved in a product's value chain",
     )
     Version = (
         auto(),
@@ -610,10 +673,6 @@ class NameplateDescription(Enum):
     InstallationChecksum = (
         auto(),
         "[en] Provides the checksum for the software available at InstallationURI",
-    )
-    SerialNumber = (
-        auto(),
-        "[en] Unique combination of numbers and letters used to identify the software instance",
     )
     InstanceName = (auto(), "[en] The name of the software instance")
     InstalledVersion = (
@@ -664,10 +723,17 @@ class NameplateDescription(Enum):
         "[en] contains information about the marking labelled on the device",
     )
     MarkingName = (auto(), "[en] common name of the marking")
-    Markings = (auto(), "[en] Collection of product markings")
     AssetSpecificProperties = (
         auto(),
         "[en] Group of properties that are listed on the asset's nameplate and are grouped based on guidelines",
+    )
+    CompanyLogo = (
+        auto(),
+        "[en] a graphic mark used to represent a company, an organisation or a product",
+    )
+    Markings = (
+        auto(),
+        "[en] Note: CE marking is declared as mandatory according to EU Blue Guide",
     )
 
 

@@ -7,7 +7,7 @@ from pandas import DataFrame
 from model import Property
 from parser_enum import (
     DescriptionType,
-    ParserError,
+    Error,
     Similarity,
     Status,
 )
@@ -39,7 +39,7 @@ class ExcelConverter:
         )
 
         if not file_paths:
-            return ParserError.NOT_EXIST_FILE
+            return Error.NOT_EXIST_FILE
 
         for file_path in file_paths:
             try:
@@ -47,7 +47,7 @@ class ExcelConverter:
                     data = json.load(file)
                     self.jsons.append((data, file_path))
             except Exception as e:
-                return ParserError.FAIL_LOAD_FILE
+                return Error.FAIL_LOAD_FILE
         return self.jsons
 
     """
@@ -166,7 +166,6 @@ class ExcelConverter:
             "modelType",
             "idShort",
             "semanticId",
-            "value",
             "description",
         ]
 
@@ -178,7 +177,7 @@ class ExcelConverter:
     """
 
     def convert_json_to_excel(self, queue_handler: QueueHandler):
-        if self.jsons in [error for error in ParserError]:
+        if self.jsons in [error for error in Error]:
             return
         try:
             for json, file_path in self.jsons:
@@ -204,7 +203,6 @@ class ExcelConverter:
                     "idShort",
                     "reference",
                     "semanticId",
-                    "value",
                     "description",
                     "parent",
                 ]
