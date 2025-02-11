@@ -22,7 +22,7 @@
 - 프로젝트 경로에서 다음 명령어 수행
 
 ```
-pyinstaller --onefile --noconsole ./src/main.py
+pyinstaller --onefile --noconsole --collect-data=aas_test_engine ./src/main.py
 ```
 
 ### CASE 2. 번역 기능 사용
@@ -47,7 +47,7 @@ enc.encryption()
 - 프로젝트 경로에서 다음 명령어 수행
 
 ```
-pyinstaller --onefile --noconsole --add-data ".env:." --add-data ".pem:." ./src/main.py
+pyinstaller --onefile --noconsole --add-data ".env:." --add-data ".pem:." --collect-data=aas_test_engines ./src/main.py
 ```
 
 <br>
