@@ -142,29 +142,30 @@ class ExcelConverter:
         for i in range(1, max_depth):
             df[f"SMC{i:02d}"] = None
 
-        for i, r in enumerate(
-            df.itertuples(index=True)
-        ):  # 25/02/12 - [fix] 원본 데이터와 인덱스 일치
-            depth = r.depth
-            id_short = r.idShort
-            if r.modelType in self.smc_group:
+        prev_r = None
+
+        for i, r in df.iterrows():  # 25/02/12 - [fix] 부모 설정된 이전 행 관리
+            depth = r["depth"]
+            id_short = r["idShort"]
+
+            if r["modelType"] in self.smc_group:
                 df.at[i, f"SMC{depth:02d}"] = id_short
             else:
-                if r.parent is None and depth < 2:
+                if r["parent"] is None and depth < 2:
                     df.at[i, f"SMC{depth:02}"] = "-"
-                if r.parent is not None and (
+
+                if r["parent"] is not None and (
                     (
-                        i > 0
-                        and df.iloc[i - 1]["depth"] != r.depth
-                        and df.iloc[i - 1]["modelType"] not in self.smc_group
+                        (
+                            i > 0
+                            and prev_r.depth != r.depth
+                            and prev_r.modelType not in self.smc_group
+                        )
+                        or i == 0
                     )
-                    or i == 0
                 ):
-                    df.at[i, f"SMC{depth-1:02}"] = r.parent
-            df.at[i, "modelType"] = r.modelType
-            df.at[i, "idShort"] = r.idShort
-            df.at[i, "semanticId"] = r.semanticId
-            df.at[i, "description"] = r.description
+                    df.at[i, f"SMC{depth-1:02}"] = r["parent"]
+            prev_r = r
 
         columns = [f"SMC{i:02d}" for i in range(1, max_depth)] + [
             "modelType",
@@ -213,9 +214,7 @@ class ExcelConverter:
 
                 result_df = result_df.reindex(columns=required_columns, fill_value="")
 
-                rm_index_df = result_df.drop(columns=["index"])
-
-                tree_df = self.apply_depth_hierarchy(rm_index_df)
+                tree_df = self.apply_depth_hierarchy(result_df)
 
                 saved = self.save_to_xlsx(tree_df, file_path)
 
