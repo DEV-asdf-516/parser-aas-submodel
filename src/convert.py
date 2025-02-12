@@ -142,25 +142,29 @@ class ExcelConverter:
         for i in range(1, max_depth):
             df[f"SMC{i:02d}"] = None
 
-        for i, r in df.iterrows():
-            depth = r["depth"]
-
-            id_short = r["idShort"]
-
-            if r["modelType"] in self.smc_group:
+        for i, r in enumerate(
+            df.itertuples(index=True)
+        ):  # 25/02/12 - [fix] 원본 데이터와 인덱스 일치
+            depth = r.depth
+            id_short = r.idShort
+            if r.modelType in self.smc_group:
                 df.at[i, f"SMC{depth:02d}"] = id_short
             else:
-                if r["parent"] is None and depth < 2:
+                if r.parent is None and depth < 2:
                     df.at[i, f"SMC{depth:02}"] = "-"
-                if r["parent"] is not None and (
+                if r.parent is not None and (
                     (
                         i > 0
-                        and df.iloc[i - 1]["depth"] != r["depth"]
+                        and df.iloc[i - 1]["depth"] != r.depth
                         and df.iloc[i - 1]["modelType"] not in self.smc_group
                     )
                     or i == 0
                 ):
-                    df.at[i, f"SMC{depth-1:02}"] = r["parent"]
+                    df.at[i, f"SMC{depth-1:02}"] = r.parent
+            df.at[i, "modelType"] = r.modelType
+            df.at[i, "idShort"] = r.idShort
+            df.at[i, "semanticId"] = r.semanticId
+            df.at[i, "description"] = r.description
 
         columns = [f"SMC{i:02d}" for i in range(1, max_depth)] + [
             "modelType",
