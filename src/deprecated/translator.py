@@ -1,7 +1,9 @@
+from util import deprecated
 from openai import OpenAI
 from cryption import CipherKey, Decrypt
 
 
+@deprecated
 class GptService:
     _instance = None
 

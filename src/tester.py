@@ -3,7 +3,6 @@ from tkinter import filedialog
 from parser_enum import Error, TestFormat, Status, Level
 from pathlib import Path
 from handler import QueueHandler
-import io
 import re
 
 
@@ -65,48 +64,32 @@ class TestAasEngine:
             self.files.append((path, test_result))
 
     """
-    - test_detail_log
-    - summary: 테스트 결과에 대한 상세 로그 출력
+    - test_log
+    - summary: 테스트 결과에 대한 로그 출력
     """
 
-    def test_detail_log(self, queue_handler: QueueHandler):
+    def test_log(self, queue_handler: QueueHandler):
+        test: file.AasTestResult
+        pattern = re.compile(r"\033\[[0-9;]*m")
         for path, test in self.files:
             queue_handler.add({f"start test {path}.": Status.START})
-            queue_handler.add({f"{test.message.strip()}": Level.color(Level.TRACE)})
-            message = self.record(test)
-            queue_handler.add({f"{message}": Level.color(test.sub_results[-1].level)})
+            for line in test.to_lines():
+                queue_handler.add(
+                    {f"{pattern.sub('',line.strip())}": Level.color(Level.INFO)}
+                )
             if test.ok():
-                queue_handler.add({f"{path} successfully passed.": Status.END})
+                queue_handler.add(
+                    {
+                        f"{Status.END.value} {path} successfully passed.": Level.color(
+                            Level.SUCCESS
+                        )
+                    }
+                )
             else:
-                queue_handler.add({f"{path} pass failed.": Status.END})
-
-    """
-    - test_simple_log
-    - summary: 테스트 결과에 대한 간략한 로그 출력
-    """
-
-    def test_simple_log(self, queue_handler: QueueHandler):
-        for path, test in self.files:
-            queue_handler.add({f"start test {path}.": Status.START})
-            queue_handler.add({f"{test.message.strip()}": Level.color(Level.TRACE)})
-
-            for sub in test.sub_results:
-                queue_handler.add({f"{sub.message}": Level.color(sub.level)})
-            if test.ok():
-                queue_handler.add({f"{path} successfully passed.": Status.END})
-            else:
-                queue_handler.add({f"{path} pass failed.": Status.END})
-
-    """
-    - record
-    - summary: 테스트 결과를 기록
-    """
-
-    def record(self, test: file.AasTestResult):
-        buffer = io.StringIO()
-        for line in test.to_lines():
-            pattern = r"\033\[[0-9;]*m"
-            buffer.write(f"{re.sub(pattern,'',line.strip())}\n")
-        message = buffer.getvalue().rstrip()
-        buffer.close()
-        return message
+                queue_handler.add(
+                    {
+                        f"{Status.END.value} {path} pass failed.": Level.color(
+                            Level.ERROR
+                        )
+                    }
+                )

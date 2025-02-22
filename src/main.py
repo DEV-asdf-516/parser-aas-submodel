@@ -1,5 +1,4 @@
 from gui import Gui
-from dotenv import load_dotenv
 import tkinter as tk
 
 
@@ -10,5 +9,4 @@ def main():
 
 
 if __name__ == "__main__":
-    load_dotenv()
     main()

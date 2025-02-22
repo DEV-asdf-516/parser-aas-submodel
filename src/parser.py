@@ -1,21 +1,25 @@
+from abc import ABC, abstractmethod
 from pandas import DataFrame
 import pandas as pd
 from model import SubModelCollection, Property
+from parser_enum import KeyName, ModelTypeName
 
 
 class Parser:
-    def __init__(self, json):
-        self.extract_columns = [
-            "idShort",
-            "modelType",
-            "value",
-            "statements",
-            "description",
-        ]
-        self.languages = ["kr", "KR", "en", "EN", "de", "fr", "jp"]
-        self.no_recursive_columns = ["language", "text"]
+    def __init__(self, json: dict):
+        self.extract_columns = KeyName.extract_names()
+        self.no_recursive_columns = [KeyName.language.name, KeyName.text.name]
         self.json = json
         self.name = None
+        self._properties = {
+            KeyName.index.name: PropertyIndex(),
+            KeyName.idShort.name: PropertyIdShort(),
+            KeyName.semanticId.name: PropertySemanticId(),
+            KeyName.indent.name: PropertyIndent(),
+            KeyName.modelType.name: PropertyModelType(),
+            KeyName.description.name: PropertyDescription(),
+            KeyName.value.name: PropertyValue(),
+        }
 
     """
     - _create_smc_list
@@ -23,7 +27,7 @@ class Parser:
     """
 
     def _create_smc_list(self):
-        elements = self.json["submodelElements"]
+        elements = self.json.get(KeyName.submodelElements.name)
         smc_list = self._extract_smc(elements, [])
         extracted = [smc for smc in smc_list if smc.model_type is not None]
         return extracted
@@ -38,24 +42,26 @@ class Parser:
         if isinstance(elements, dict):
             for key, value in elements.items():
                 if isinstance(value, dict) or isinstance(value, list):
-                    if key in ["value", "statements"] and isinstance(value, list):
+                    if key in [
+                        KeyName.value.name,
+                        KeyName.statements.name,
+                    ] and isinstance(value, list):
                         recursive_smc.children = [
                             (
                                 f"#{i:02d}"
-                                if not item.get("idShort", "")
-                                else item.get("idShort")
+                                if not item.get(KeyName.idShort.name, "")
+                                else item.get(KeyName.idShort.name)
                             )
                             for i, item in enumerate(value)
                         ]
                     self._extract_smc(value, smcs)
                 else:
-                    if key == "idShort":
+                    if key == KeyName.idShort.name:
                         recursive_smc.id_short = value
-                    elif key == "modelType" and value in [
-                        "SubmodelElementCollection",
-                        "Entity",
-                        "SubmodelElementList",
-                    ]:
+                    elif (
+                        key == KeyName.modelType.name
+                        and value in ModelTypeName.smc_group()
+                    ):
                         recursive_smc.model_type = value
         elif isinstance(elements, list):
             for element in elements:
@@ -105,7 +111,6 @@ class Parser:
                 for p in parents
                 if r.id_short in (p.children or [])
             ]
-
             if not parent:
                 continue
             else:  # 25/01/06 - [fix] 부모 설정 알고리즘 개선
@@ -171,11 +176,11 @@ class Parser:
     ========================================================================= [AFTER > LIST] =========================================================================
     [
       ['idShort', 'ProductCarbonFootprint'],
-      ['description', '[en] Balance of greenhouse gas emissions along the entire life cycle of a product in a defined application and in relation to a defined unit of use'],
+      ['description', 'Balance of greenhouse gas emissions along the entire life cycle of a product in a defined application and in relation to a defined unit of use'],
       ['semanticId', 'https://admin-shell.io/idta/CarbonFootprint/ProductCarbonFootprint/0/9'],
       ['', 'idShort', 'PCFCalculationMethod'],
-      ['', 'description', '[en] Standard, method for determining the greenhouse gas emissions of a product'], 
-      ['', 'description', '[de] Norm, Standard, Verfahren zur Ermittlung der Treibhausgas-Emissionen eines Produkts']
+      ['', 'description', 'Standard, method for determining the greenhouse gas emissions of a product'], 
+      ['', 'description', 'Norm, Standard, Verfahren zur Ermittlung der Treibhausgas-Emissionen eines Produkts']
       ['', 'semanticId', '0173-1#02-ABG854#001'],
       ['', 'value', ''],
       ['', 'modelType', 'Property'],
@@ -203,24 +208,29 @@ class Parser:
                         flattened.append(indent + [key, value])  # 현재 키와 값 추가
 
                 if (
-                    key == "semanticId" and isinstance(value, dict) and "keys" in value
+                    key == KeyName.semanticId.name
+                    and isinstance(value, dict)
+                    and KeyName.keys.name in value
                 ):  # semanticId의 keys에서 value값만 추가
                     indent = [""] * parent_depth
-                    for key_entry in value.get("keys"):
-                        flattened.append(indent + [key, key_entry.get("value")])
+                    for key_entry in value.get(KeyName.keys.name):
+                        flattened.append(
+                            indent + [key, key_entry.get(KeyName.value.name)]
+                        )
                 if (
-                    key in ["description", "value"]
+                    key in [KeyName.description.name, KeyName.value.name]
                     and isinstance(value, list)
                     and value
                 ):
                     indent = [""] * parent_depth
                     for v in value:
-                        if key == "description" or (
-                            key == "value"  # multiLanguageProperty value값 추출
+                        if key == KeyName.description.name or (
+                            key
+                            == KeyName.value.name  # multiLanguageProperty value값 추출
                             and any(k in v for k in self.no_recursive_columns)
                         ):
                             flattened.append(
-                                indent + [key, f'[{v.get("language")}] {v.get("text")}']
+                                indent + [key, f"{v.get(KeyName.text.name)}"]
                             )
 
         elif isinstance(element, list):
@@ -235,8 +245,8 @@ class Parser:
     """
 
     def create_indent_rows(self):
-        self.name = self.json["idShort"]
-        elements = self.json["submodelElements"]
+        self.name = self.json.get(KeyName.idShort.name)
+        elements = self.json.get(KeyName.submodelElements.name)
         return self._to_flattend(elements, 0, [])
 
     """
@@ -246,12 +256,12 @@ class Parser:
     ========================================================================= [BEFORE > DataFrame] =========================================================================
                     0                                                  1                                                  2     3
         0        idShort                             ProductCarbonFootprint                                               None  None
-        1    description  [en] Balance of greenhouse gas emissions along...                                               None  None
+        1    description  Balance of greenhouse gas emissions along...                                               None  None
         2     semanticId  https://admin-shell.io/idta/CarbonFootprint/Pr...                                               None  None
         3                                                           idShort                               PCFCalculationMethod  None
-        4                                                       description  [en] Standard, method for determining the gree...  None
+        4                                                       description  Standard, method for determining the gree...  None
         ..           ...                                                ...                                                ...   ...
-        171                                                     description  [en] Time at which something should no longer ...  None
+        171                                                     description  Time at which something should no longer ...  None
         172                                                      semanticId  https://admin-shell.io/idta/CarbonFootprint/Ex...  None
         173                                                           value                                                     None
         174                                                       modelType                                           Property  None
@@ -263,7 +273,7 @@ class Parser:
           {'idShort': 'ProductCarbonFootprint'},
           {'index': 0},
           {'indent': 0},
-          {'description': '[en] Balance of greenhouse gas emissions along the entire life cycle of a product in a defined application and in relation to a defined unit of use'}, 
+          {'description': 'Balance of greenhouse gas emissions along the entire life cycle of a product in a defined application and in relation to a defined unit of use'}, 
           {'index': 1}, 
           {'indent': 0},
           {'semanticId': 'https://admin-shell.io/idta/CarbonFootprint/ProductCarbonFootprint/0/9'},
@@ -272,10 +282,10 @@ class Parser:
           {'idShort': 'PCFCalculationMethod'},
           {'index': 3},
           {'indent': 1},
-          {'description': '[en] Standard, method for determining the greenhouse gas emissions of a product'}, 
+          {'description': 'Standard, method for determining the greenhouse gas emissions of a product'}, 
           {'index': 4}, 
           {'indent': 1}, 
-          {'description': '[de] Norm, Standard, Verfahren zur Ermittlung der Treibhausgas-Emissionen eines Produkts'}, 
+          {'description': 'Norm, Standard, Verfahren zur Ermittlung der Treibhausgas-Emissionen eines Produkts'}, 
           {'index': 5}, 
           {'indent': 1},
           {'semanticId': '0173-1#02-ABG854#001'},
@@ -319,7 +329,7 @@ class Parser:
                 if not value:
                     indent -= 1
 
-            if key == "idShort":
+            if key == KeyName.idShort.name:
                 parent_key = [parent for parent in parents if parent.id_short == value]
                 if parent_key:
                     empty_ids.clear()
@@ -329,13 +339,13 @@ class Parser:
             if sequence not in sequence_dict:
                 sequence_dict[sequence] = []
 
-            if key == "idShort" and not value and empty_ids:
+            if key == KeyName.idShort.name and not value and empty_ids:
                 sequence_dict[sequence].append({key: empty_ids[0]})
                 empty_ids.pop(0)
             else:
                 sequence_dict[sequence].append({key: value})
-            sequence_dict[sequence].append({"index": index})
-            sequence_dict[sequence].append({"indent": indent})
+            sequence_dict[sequence].append({KeyName.index.name: index})
+            sequence_dict[sequence].append({KeyName.indent.name: indent})
 
         return sequence_dict, parents
 
@@ -349,7 +359,7 @@ class Parser:
           {'idShort': 'ProductCarbonFootprint'},
           {'index': 0},
           {'indent': 0},
-          {'description': '[en] Balance of greenhouse gas emissions along the entire life cycle of a product in a defined application and in relation to a defined unit of use'}, 
+          {'description': 'Balance of greenhouse gas emissions along the entire life cycle of a product in a defined application and in relation to a defined unit of use'}, 
           {'index': 1}, 
           {'indent': 0},
           {'semanticId': 'https://admin-shell.io/idta/CarbonFootprint/ProductCarbonFootprint/0/9'},
@@ -358,10 +368,10 @@ class Parser:
           {'idShort': 'PCFCalculationMethod'},
           {'index': 3},
           {'indent': 1},
-          {'description': '[en] Standard, method for determining the greenhouse gas emissions of a product'}, 
+          {'description': 'Standard, method for determining the greenhouse gas emissions of a product'}, 
           {'index': 4}, 
           {'indent': 1}, 
-          {'description': '[de] Norm, Standard, Verfahren zur Ermittlung der Treibhausgas-Emissionen eines Produkts'}, 
+          {'description': 'Norm, Standard, Verfahren zur Ermittlung der Treibhausgas-Emissionen eines Produkts'}, 
           {'index': 5}, 
           {'indent': 1},
           {'semanticId': '0173-1#02-ABG854#001'},
@@ -387,7 +397,7 @@ class Parser:
        'idShort': 'ProductCarbonFootprint',
        'semanticId': 'https://admin-shell.io/idta/CarbonFootprint/ProductCarbonFootprint/0/9',
        'modelType': 'SubmodelElementCollection',
-       'description': '[en] Balance of greenhouse gas emissions along the entire life cycle of a product in a defined application and in relation to a defined unit of use',
+       'description': 'Balance of greenhouse gas emissions along the entire life cycle of a product in a defined application and in relation to a defined unit of use',
        'value': None,
        'reference': 'PCFCalculationMethod, PCFCO2eq, PCFReferenceValueForCalculation, PCFQuantityOfMeasureForCalculation, PCFLifeCyclePhase, ExplanatoryStatement, PCFGoodsAddressHandover, PublicationDate, ExpirationDate'
       },
@@ -397,7 +407,7 @@ class Parser:
        'idShort': 'PCFCalculationMethod',
        'semanticId': '0173-1#02-ABG854#001',
        'modelType': 'Property',
-       'description': '[en] Standard, method for determining the greenhouse gas emissions of a product [de] Norm, Standard, Verfahren zur Ermittlung der Treibhausgas-Emissionen eines Produkts',
+       'description': 'Standard, method for determining the greenhouse gas emissions of a product Norm, Standard, Verfahren zur Ermittlung der Treibhausgas-Emissionen eines Produkts',
        'value': '',
        'reference': None
       },
@@ -410,44 +420,15 @@ class Parser:
     ):
         rows = []
         for items in sequence_dict.values():
-
             prop = Property()
-
             for idx, item in enumerate(items):
                 if isinstance(item, dict):
-                    if "index" in item:
-                        if not prop.is_allocated(prop.index):
-                            prop.index = item.get("index", 0)
-                    if "idShort" in item:
-                        prop.id_short = item.get("idShort")
-                    if "semanticId" in item:
-                        prop.semantic_id = item.get("semanticId")
-                    if "indent" in item:
-                        if not prop.is_allocated(prop.depth):
-                            prop.depth = item.get("indent") + 1
-                    if "modelType" in item:
-                        if not prop.is_allocated(prop.model_type):
-                            prop.model_type = item.get("modelType")
-                    if "description" in item:
-                        if prop.is_allocated(prop.description):
-                            prop.description += " " + item.get("description")
-                        else:
-                            prop.description = item.get("description")
-                    if "value" in item:
-                        value = (
-                            f'[{item.get("value")}]'
-                            if item.get("value") in self.languages
-                            else item.get("value")
-                        )
-                        if prop.is_allocated(prop.value):
-                            prop.value += " " + value
-                        else:
-                            prop.value = value
+                    self._apply_property_value_from_dict(prop, item)
 
                 if (
                     idx < len(items) - 1
                     and isinstance(items[idx + 1], dict)
-                    and "idShort" in items[idx + 1]
+                    and KeyName.idShort.name in items[idx + 1]
                 ) or idx == len(items) - 1:
                     if prop.is_allocated(prop.id_short):
                         rows.append(prop)
@@ -457,3 +438,60 @@ class Parser:
         self._allocated_parent(parents, rows)
 
         return rows
+
+    """
+    - _apply_property_value_from_dict
+    - summary: 딕셔너리 값을 Property 객체에 할당
+    """
+
+    def _apply_property_value_from_dict(self, prop, item):
+        for key, strategy in self._properties.items():
+            if key in item:
+                strategy.apply(prop, item)
+
+
+class PropertyApply(ABC):
+    @abstractmethod
+    def apply(self, prop: Property, item: dict):
+        pass
+
+
+class PropertyIndex(PropertyApply):
+    def apply(self, prop: Property, item: dict):
+        if not prop.is_allocated(prop.index):
+            prop.index = item.get(KeyName.index.name, 0)
+
+
+class PropertyIdShort(PropertyApply):
+    def apply(self, prop: Property, item: dict):
+        prop.id_short = item.get(KeyName.idShort.name)
+
+
+class PropertySemanticId(PropertyApply):
+    def apply(self, prop: Property, item: dict):
+        prop.semantic_id = item.get(KeyName.semanticId.name)
+
+
+class PropertyIndent(PropertyApply):
+    def apply(self, prop: Property, item: dict):
+        if not prop.is_allocated(prop.depth):
+            prop.depth = item.get(KeyName.indent.name) + 1
+
+
+class PropertyModelType(PropertyApply):
+    def apply(self, prop: Property, item: dict):
+        if not prop.is_allocated(prop.model_type):
+            prop.model_type = item.get(KeyName.modelType.name)
+
+
+class PropertyDescription(PropertyApply):
+    def apply(self, prop: Property, item: dict):
+        if prop.is_allocated(prop.description):
+            prop.description += "\n" + item.get(KeyName.description.name)
+        else:
+            prop.description = item.get(KeyName.description.name)
+
+
+class PropertyValue(PropertyApply):
+    def apply(self, prop: Property, item: dict):
+        prop.value = item.get(KeyName.value.name)

@@ -1,3 +1,4 @@
+from util import deprecated
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms
 import os
 import base64
@@ -25,6 +26,7 @@ enc.encryption() # Applied encryption to the API key.(Execute only once at the b
 """
 
 
+@deprecated
 # openAI api key 암호화/복호화
 class CipherKey:
     _instance = None
@@ -68,6 +70,7 @@ class CipherKey:
         return key, nonce
 
 
+@deprecated
 class Encrypt:
     def __init__(self, cipher_key):
         self._cipher_key = cipher_key
@@ -84,6 +87,7 @@ class Encrypt:
             file.write(to_base64.encode("utf-8"))
 
 
+@deprecated
 class Decrypt:
     def __init__(self, cipher_key):
         self._cipher_key = cipher_key

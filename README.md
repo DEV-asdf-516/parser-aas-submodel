@@ -5,17 +5,9 @@
 
 <br>
 
+## ❌ 25.02.22 번역 및 암호화 기능 삭제
+
 ## ❌ 24.11.15 EXE 직접 배포 중단
-
-### CASE 1. 번역 기능 미사용
-
-- `gui.py`의 GptService 주석처리
-
-```
-    def on_convert(self, queue_handler):
-        # gpt = GptService()
-        converter = ExcelConverter() # 변경
-```
 
 <br>
 
@@ -23,31 +15,6 @@
 
 ```
 pyinstaller --onefile --noconsole --collect-data=aas_test_engine ./src/main.py
-```
-
-### CASE 2. 번역 기능 사용
-
-1. OpenAi api key 발급 (필수)
-2. .env 파일 작성
-
-```
-API_KEY = your api key
-```
-
-3. Encryption 적용 후, 실행
-
-```
-private_key = CipherKey()
-enc = Encrypt(private_key)
-enc.encryption()
-```
-
-<br>
-
-- 프로젝트 경로에서 다음 명령어 수행
-
-```
-pyinstaller --onefile --noconsole --add-data ".env:." --add-data ".pem:." --collect-data=aas_test_engines ./src/main.py
 ```
 
 <br>
@@ -61,11 +28,9 @@ pyinstaller --onefile --noconsole --add-data ".env:." --add-data ".pem:." --coll
 - idShort
 - semanticId
 - description
-- value
 ```
 
-- 어떤 항목에 하위 항목이 존재하는 경우, refrence 필드에 하위 항목 표기
-- 항목에 대한 계층 단계를 depth 필드에 표기
+- 항목에 대한 계층 단계를 SMC 필드에 표기
 
 <br>
 
@@ -76,7 +41,7 @@ pyinstaller --onefile --noconsole --add-data ".env:." --add-data ".pem:." --coll
 
     - File > Export ... > Export Submodel to JSON ...
 
-2. parser.exe를 실행하여 추출한 json 파일을 엑셀파일로 변환합니다.
+2. exe 파일을 실행하여 추출한 json 파일을 엑셀파일로 변환합니다.
 ```
 
 <br>
@@ -90,11 +55,11 @@ pyinstaller --onefile --noconsole --add-data ".env:." --add-data ".pem:." --coll
 ## 🛠구현 기능
 
 - [x] JSON 파일 불러오기 & Excel 변환
-- [x] OpenAI API를 활용하여 설명에 한국어 번역 추가
-- [x] API Key 암/복호화 적용
-- [x] tkinter로 GUI 환경 구현
-- [x] Queue를 활용한 비동기 로그 처리
-- [x] 표에 계층구조 적용
+- [x] ~~OpenAI API를 활용하여 설명에 한국어 번역 추가~~
+- [x] ~~API Key 암/복호화 적용~~
+- [x] GUI 환경 구현
+- [x] 로그 출력
+- [x] 모델링 파일 테스트 엔진 추가
 
 ---
 
@@ -112,10 +77,6 @@ pyinstaller --onefile --noconsole --add-data ".env:." --add-data ".pem:." --coll
 
 ![res3](https://github.com/user-attachments/assets/ba95441a-4150-4fff-8858-ce6f9e9ac4e0)
 
-##### Submodel_Documentation.xlsx
+##### Submodel_CarbonFootprint.xlsx
 
-![res4](https://github.com/user-attachments/assets/8e08e89c-1340-4532-9d49-894b81dbaeb7)
-
-##### [24/10/22] Submodel_Documentation.xlsx 👉 계층구조 적용
-
-![image](https://github.com/user-attachments/assets/fb0ce3a0-dc47-4872-9d1b-c0c58fbe3447)
+![Image](https://github.com/user-attachments/assets/f588bd73-9cb3-4b4f-b191-e863467462f4)

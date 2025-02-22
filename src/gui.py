@@ -7,9 +7,8 @@ import tkinter as tk
 from parser_enum import Level, Status
 from tkinter import ttk, scrolledtext, Tk
 from tkinter import ttk, VERTICAL, HORIZONTAL, N, S, E, W
-from convert import ExcelConverter
+from converter import ExcelConverter
 from tester import TestAasEngine
-from translator import GptService
 
 
 class Gui:
@@ -66,8 +65,7 @@ class LoadButton:
         self.stop_event = threading.Event()
 
     def on_convert(self, queue_handler):
-        gpt = GptService()
-        converter = ExcelConverter(translator=gpt)
+        converter = ExcelConverter()
         thread = threading.Thread(target=self.run, args=(converter, queue_handler))
         thread.start()
 
@@ -98,7 +96,7 @@ class TestButton:
 
     def run(self, tester: TestAasEngine, queue_handler: QueueHandler):
         tester.files = tester.load_test_file(queue_handler)
-        tester.test_simple_log(queue_handler)
+        tester.test_log(queue_handler)
 
     def stop_thread(self):
         self.stop_event.set()
