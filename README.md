@@ -5,9 +5,21 @@
 
 <br>
 
+## 👇 Download Here
+
+> https://github.com/DEV-asdf-516/parser-aas-submodel/releases
+
+<br>
+
+## Use CLI
+
 - 프로젝트 경로에서 다음 명령어 수행
 
 ```
+git clone https://github.com/DEV-asdf-516/parser-aas-submodel.git
+
+pip install -r requirements.txt
+
 pyinstaller --onefile --noconsole --collect-data=aas_test_engines ./src/main.py
 ```
 
