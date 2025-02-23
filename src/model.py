@@ -94,7 +94,7 @@ class Property:
         self._parent = parent
 
     def is_allocated(self, input_value):
-        return any([input_value]) if input_value is not None else False
+        return bool(input_value) if input_value is not None else False
 
     def to_json(self):
         return {

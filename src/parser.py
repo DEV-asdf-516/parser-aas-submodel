@@ -47,12 +47,7 @@ class Parser:
                         KeyName.statements.name,
                     ] and isinstance(value, list):
                         recursive_smc.children = [
-                            (
-                                f"#{i:02d}"
-                                if not item.get(KeyName.idShort.name, "")
-                                else item.get(KeyName.idShort.name)
-                            )
-                            for i, item in enumerate(value)
+                            item.get(KeyName.idShort.name) for item in value
                         ]
                     self._extract_smc(value, smcs)
                 else:
@@ -432,7 +427,7 @@ class Parser:
                 ) or idx == len(items) - 1:
                     if prop.is_allocated(prop.id_short):
                         rows.append(prop)
-                        prop = Property()
+                    prop = Property()
 
         self._extract_smc_childeren(parents, rows)
         self._allocated_parent(parents, rows)

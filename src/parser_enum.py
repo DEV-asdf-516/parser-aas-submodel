@@ -36,7 +36,7 @@ class ModelTypeName(Enum):
         ]
 
     @classmethod
-    def skip_smc_group(cls):
+    def smc_group_list(cls):
         return [
             cls.SubmodelElementCollection.name,
             cls.SubmodelElementList.name,

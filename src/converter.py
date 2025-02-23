@@ -248,8 +248,9 @@ class RootHierarchy(HierarchyApply):
     ):
         if (
             prev_row
-            and row.modelType in ModelTypeName.skip_smc_group()
-            and prev_row.modelType not in ModelTypeName.smc_group()
+            and row.modelType in ModelTypeName.smc_group_list()
+            and prev_row.modelType not in ModelTypeName.smc_group_list()
+            and not re.match(r"^[,\s]+$", row.reference)
         ) or (not prev_row and row.modelType in ModelTypeName.smc_group()):
             df.loc[index] = None
             return (row, True)
@@ -276,11 +277,7 @@ class HasParentHierarchy(HierarchyApply):
     def apply(
         self, index, row: SimpleNamespace, prev_row: SimpleNamespace, df: DataFrame
     ):
-        if (
-            row.parent
-            and prev_row.depth < row.depth
-            and prev_row.modelType in ModelTypeName.smc_group()
-        ):
+        if row.parent and prev_row.depth != row.depth and prev_row.parent != row.parent:
             df.at[
                 index,
                 f"{ModelTypeShortend.SubmodelElementCollection.value}{row.depth-1:02}",

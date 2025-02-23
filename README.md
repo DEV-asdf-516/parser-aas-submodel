@@ -5,16 +5,10 @@
 
 <br>
 
-## ❌ 25.02.22 번역 및 암호화 기능 삭제
-
-## ❌ 24.11.15 EXE 직접 배포 중단
-
-<br>
-
 - 프로젝트 경로에서 다음 명령어 수행
 
 ```
-pyinstaller --onefile --noconsole --collect-data=aas_test_engine ./src/main.py
+pyinstaller --onefile --noconsole --collect-data=aas_test_engines ./src/main.py
 ```
 
 <br>
@@ -65,18 +59,14 @@ pyinstaller --onefile --noconsole --collect-data=aas_test_engine ./src/main.py
 
 #### 📸 SCREEN SHOT
 
-##### 복수 파일 선택
+#### JSON to XLSX Convert
 
-![res2](https://github.com/user-attachments/assets/bae3faf5-c4ba-4097-a02b-ac4a0479e080)
+![Image](https://github.com/user-attachments/assets/ba17a019-0ea0-4d37-b8a5-5d1cf06a43b0)
 
-##### 로깅
+#### Submodel_CarbonFootprint.xlsx
 
-![res1](https://github.com/user-attachments/assets/3445b531-fa22-45d8-818b-ed0996d0d078)
+![Image](https://github.com/user-attachments/assets/139e1ef8-0b0c-40c8-b4b5-015a7ac2f345)
 
-##### 변환 결과
+#### AAS File Test
 
-![res3](https://github.com/user-attachments/assets/ba95441a-4150-4fff-8858-ce6f9e9ac4e0)
-
-##### Submodel_CarbonFootprint.xlsx
-
-![Image](https://github.com/user-attachments/assets/f588bd73-9cb3-4b4f-b191-e863467462f4)
+![Image](https://github.com/user-attachments/assets/4dd8dc80-08d8-4e12-b5b3-8cd7d92d6933)
