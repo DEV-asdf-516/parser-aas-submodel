@@ -1,9 +1,16 @@
 # AAS Submodel json to excel program
 
+> [!WARNING]
+> 이 저장소는 더 이상 관리되지 않습니다. 추가 기능 및 버그 수정은 [여기](https://github.com/DEV-asdf-516/aasist-tools)서 업데이트 됩니다.
+
+<br>
+
+> [!NOTE]
 > 해당 프로그램은 AASX Package Explorer V3.0을 기준으로 작성되었습니다.  
 > ~~_문서작업 표 노가다 하기 싫어서 구현함_~~
 
 <br>
+
 
 ## 👇 Download Here
 
@@ -54,7 +61,7 @@ pyinstaller --onefile --noconsole --collect-data=aas_test_engines ./src/main.py
 
 ## 🔧기술 스택
 
-<img src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white"><img src="https://img.shields.io/badge/VSC-007ACC?style=for-the-badge&logo=Visual Studio Code&logoColor=white">
+<img src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white"><img src="https://img.shields.io/badge/VSC-007ACC?style=for-the-badge">
 
 <br>
 
